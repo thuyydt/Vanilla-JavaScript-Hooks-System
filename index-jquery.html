@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jQuery Hooks System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007acc;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h1::before {
+            content: '🔗';
+            font-size: 1.2em;
+        }
+        
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            padding-left: 10px;
+            border-left: 4px solid #007acc;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #007acc, #005999);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,122,204,0.3);
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #005999, #004477);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,122,204,0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .status-bar {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .status-item {
+            padding: 5px 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 12px;
+        }
+        
+        .main-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .main-display h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .data-preview {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .timestamp {
+            color: #6c757d;
+            font-size: 11px;
+            text-align: right;
+            margin-top: 10px;
+        }
+        
+        .data-table {
+            margin: 20px 0;
+        }
+        
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .data-table th {
+            background: #007acc;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+        }
+        
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .progress-indicator {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #007acc, #28a745);
+            height: 100%;
+            width: 0%;
+            transition: width 1.5s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .notifications-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .notification {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #007acc;
+        }
+        
+        .notification:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .notification-success {
+            border-left-color: #28a745;
+        }
+        
+        .notification-warning {
+            border-left-color: #ffc107;
+        }
+        
+        .notification-error {
+            border-left-color: #dc3545;
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        #user-status {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .info-panel {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .info-panel h3 {
+            margin-top: 0;
+            opacity: 0.9;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .feature-list li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .button-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .notifications-container {
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>jQuery Hooks System Demo</h1>
+        
+        <div class="info-panel">
+            <h3>🎯 What is this?</h3>
+            <p>This is a comprehensive hook system built with jQuery that allows you to create modular, extensible applications. Hooks enable different parts of your application to communicate and execute code at specific points.</p>
+            
+            <h4>🌟 Features:</h4>
+            <ul class="feature-list">
+                <li>Priority-based hook execution</li>
+                <li>Promise-based asynchronous processing</li>
+                <li>Modular architecture with separate concerns</li>
+                <li>Real-time UI updates and notifications</li>
+                <li>Data validation, transformation, and caching</li>
+                <li>Performance monitoring and activity logging</li>
+            </ul>
+        </div>
+
+        <div id="user-status">👤 Not logged in</div>
+
+        <h2>🎮 Interactive Demo</h2>
+        <div class="button-grid">
+            <button onclick="triggerUserActions()">🔐 Trigger User Actions</button>
+            <button onclick="triggerDataProcessing()">📊 Process Data</button>
+            <button onclick="triggerUIUpdates()">🎨 Update UI</button>
+            <button onclick="testAllHooks()">🧪 Test All Hooks</button>
+            <button onclick="generateRandomData()">🎲 Generate Random Data</button>
+            <button onclick="showHookInfo()">ℹ️ Hook Information</button>
+            <button onclick="clearOutput()">🧹 Clear Output</button>
+        </div>
+
+        <h2>📊 System Output</h2>
+        <div id="output" class="output">Welcome to jQuery Hooks System! Click any button above to see the hooks in action.
+        </div>
+
+        <h2>📈 Live Data Display</h2>
+        <p>This area will be populated when you trigger data processing or UI updates.</p>
+    </div>
+
+    <!-- Load jQuery from CDN -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <!-- Load our hook system files -->
+    <script src="jquery/jQueryHookSystem.js"></script>
+    <script src="jquery/jQueryUserActions.js"></script>
+    <script src="jquery/jQueryDataProcessing.js"></script>
+    <script src="jquery/jQueryUIUpdates.js"></script>
+    <script src="jquery/jQueryUtils.js"></script>
+    <script src="jquery/jQueryMain.js"></script>
+</body>
+</html>
